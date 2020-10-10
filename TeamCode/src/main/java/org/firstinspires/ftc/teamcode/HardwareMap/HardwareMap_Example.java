@@ -48,8 +48,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  *
  * Motor channel:  Left Front (LF) drive motor:        "leftFront"
  * Motor channel:  Right Front (RF) drive motor:        "rightFront"
- * Motor channel:  Left Back (LB) drive motor:        "leftBack"
- * Motor channel:  Right Back (RB) drive motor:        "rightBack"
+ * Motor channel:  Left Back (LB) drive motor:        "leftBack"   Port 0
+ * Motor channel:  Right Back (RB) drive motor:        "rightBack"   Port 1
  */
 public class HardwareMap_Example
 {
