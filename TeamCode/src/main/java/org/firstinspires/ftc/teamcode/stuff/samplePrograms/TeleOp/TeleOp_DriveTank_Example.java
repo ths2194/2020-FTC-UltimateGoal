@@ -27,17 +27,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.TeleOp;
+package org.firstinspires.ftc.teamcode.stuff.samplePrograms.TeleOp;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.Range;
 
 //import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 
 // List where other files are located that are used in this OpMode
-import org.firstinspires.ftc.teamcode.HardwareMap.HardwareMap_Example;
+import org.firstinspires.ftc.teamcode.stuff.samplePrograms.HardwareMap.HardwareMap_Example;
 
 /**
  * This OpMode uses the HardwareMap_Example class to define the devices on the robot.
