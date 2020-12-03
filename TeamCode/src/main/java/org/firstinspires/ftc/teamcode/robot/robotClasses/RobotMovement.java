@@ -31,12 +31,14 @@ public class RobotMovement {
         double changeX = targetX - globalPositionUpdate.returnXCoordinate();
         double changeY = targetY - globalPositionUpdate.returnYCoordinate();
 
-        double angleDifference = Math.atan2(changeY,changeX) - globalPositionUpdate.returnOrientationRadians();
+//        double angleDifference = Math.atan2(changeY,changeX) - globalPositionUpdate.returnOrientationRadians();
+        double angleDifference = globalPositionUpdate.returnOrientationRadians() - Math.atan2(changeY,changeX);
 
-        //changeY is the sideways change
+        //changeY is the sideways change, changeX is forward change
         double relativeChangeX = Math.cos(angleDifference);
         double relativeChangeY = Math.sin(angleDifference);
 
+        telemetry.addData("relativeChangeSideways",relativeChangeY);
 
         double pivotCorrection = Math.toRadians(desiredAngle) - globalPositionUpdate.returnOrientationRadians();
         // normalizes pivotCorrection to be between (-PI and PI)
@@ -51,10 +53,10 @@ public class RobotMovement {
         double largestPower =
                 Math.max(Math.abs( relativeChangeX-relativeChangeY), Math.abs(relativeChangeX+relativeChangeY) );
 
-        double frontLeftMotorPower = robotPower * (relativeChangeX-relativeChangeY) / largestPower - turnMovement;
-        double frontRightMotorPower = robotPower * (relativeChangeX+relativeChangeY) / largestPower + turnMovement;
-        double backLeftMotorPower = robotPower * (relativeChangeX+relativeChangeY) / largestPower - turnMovement;
-        double backRightMotorPower = robotPower * (relativeChangeX-relativeChangeY) / largestPower + turnMovement;
+        double frontLeftMotorPower = robotPower * (relativeChangeX+relativeChangeY) / largestPower - turnMovement;
+        double frontRightMotorPower = robotPower * (relativeChangeX-relativeChangeY) / largestPower + turnMovement;
+        double backLeftMotorPower = robotPower * (relativeChangeX-relativeChangeY) / largestPower - turnMovement;
+        double backRightMotorPower = robotPower * (relativeChangeX+relativeChangeY) / largestPower + turnMovement;
 
 
         //finds largest power out of 4 motor turn and movement added to normalize values again (make them all under 1)
@@ -66,12 +68,15 @@ public class RobotMovement {
             frontRightMotor.setPower(frontRightMotorPower / largestPower);
             backLeftMotor.setPower(backLeftMotorPower / largestPower);
             backRightMotor.setPower(backRightMotorPower / largestPower);
+            displayTelemetry(frontRightMotorPower/largestPower,frontLeftMotorPower/largestPower,backRightMotorPower/largestPower,backLeftMotorPower/largestPower);
         }
         else{
             frontLeftMotor.setPower(frontLeftMotorPower);
             frontRightMotor.setPower(frontRightMotorPower);
             backLeftMotor.setPower(backLeftMotorPower);
             backRightMotor.setPower(backRightMotorPower);
+            displayTelemetry(frontRightMotorPower,frontLeftMotorPower,backRightMotorPower,backLeftMotorPower);
+
         }
 
     }
@@ -90,7 +95,13 @@ public class RobotMovement {
         while ( Math.abs(targetX-globalPositionUpdate.returnXCoordinate()) > acceptableDistance || Math.abs(targetY-globalPositionUpdate.returnYCoordinate()) > acceptableDistance
                     || (Math.abs(desiredAngle - globalPositionUpdate.returnOrientation()) + acceptableAngle)%360 - acceptableAngle > acceptableAngle) {
 
-            setTargetPowers(targetX,targetY,desiredAngle,robotPower,turnSpeed);
+            //this is testing stuff
+            double dist = Math.hypot(Math.abs(targetX-globalPositionUpdate.returnXCoordinate()), Math.abs(targetY-globalPositionUpdate.returnYCoordinate()));
+            double minPow = 0.1; double lowDistBound = 1; double highDistBound = 3;
+            double power = (robotPower-minPow)/(highDistBound-lowDistBound)*(dist-lowDistBound)+minPow;
+            power = Range.clip(power,0.1,robotPower);
+
+            setTargetPowers(targetX,targetY,desiredAngle,power,turnSpeed);
         }
         stop();
     }
@@ -105,4 +116,14 @@ public class RobotMovement {
         stop();
     }
 
+    void displayTelemetry (double frm, double flm, double brm, double blm) {
+        telemetry.addData("X Position", globalPositionUpdate.returnXCoordinate());
+        telemetry.addData("Y Position", globalPositionUpdate.returnYCoordinate());
+        telemetry.addData("Orientation (Degrees)", globalPositionUpdate.returnOrientation());
+        telemetry.addData("front right motor", frm);
+        telemetry.addData("front left motor", flm);
+        telemetry.addData("back right motor", brm);
+        telemetry.addData("back left motor", blm);
+        telemetry.update();
+    }
 }

@@ -16,7 +16,7 @@ public class GlobalCoordinatePositionUpdateSample extends LinearOpMode {
     DcMotor verticalRight, verticalLeft, horizontal;
 
     //The amount of encoder ticks for each inch the robot moves. This will change for each robot and needs to be changed here
-    final double COUNTS_PER_INCH = 728.57; //change
+    final double COUNTS_PER_INCH = 733; //change
 
 
     //Hardware map names for the encoder wheels. Again, these will change for each robot and need to be updated below
@@ -63,6 +63,7 @@ public class GlobalCoordinatePositionUpdateSample extends LinearOpMode {
         //Create and start GlobalCoordinatePosition thread to constantly update the global coordinate positions\
         OdometryGlobalCoordinatePosition globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeft, verticalRight, horizontal, COUNTS_PER_INCH, 75);
         Thread positionThread = new Thread(globalPositionUpdate);
+        globalPositionUpdate.setPosition(0,0,90); //SET STARTING POSITION
         positionThread.start();
 
 
