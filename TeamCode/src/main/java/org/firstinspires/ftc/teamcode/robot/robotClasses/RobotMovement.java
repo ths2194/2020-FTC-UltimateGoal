@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.robot.odometry.OdometryGlobalCoordinatePosition;
+import org.firstinspires.ftc.teamcode.robot.robotClasses.Pathfinding.PathFinding;
+import org.firstinspires.ftc.teamcode.robot.robotClasses.Pathfinding.Point;
 
 
 public class RobotMovement {
@@ -14,6 +16,7 @@ public class RobotMovement {
     DcMotor backRightMotor;
     DcMotor backLeftMotor;
     OdometryGlobalCoordinatePosition globalPositionUpdate;
+    PathFinding pathFind = new PathFinding();
 
     public RobotMovement(DcMotor frontRightMotor, DcMotor frontLeftMotor, DcMotor backRightMotor, DcMotor backLeftMotor, Telemetry telemetry, OdometryGlobalCoordinatePosition globalPositionUpdate) {
         this.frontRightMotor = frontRightMotor;
@@ -88,12 +91,15 @@ public class RobotMovement {
         backRightMotor.setPower(0);
     }
 
-    public void runToPosition (double targetX, double targetY, double desiredAngle, double robotPower, double turnSpeed, double acceptableDistance, double acceptableAngle){
+    public void runToPositionAndStop(double targetX, double targetY, double desiredAngle, double robotPower, double turnSpeed, double acceptableDistance, double acceptableAngle){
+        runToPosition(targetX,targetY,desiredAngle,robotPower,turnSpeed,acceptableDistance,acceptableAngle);
+        stop();
+    }
 
+    public void runToPosition(double targetX, double targetY, double desiredAngle, double robotPower, double turnSpeed, double acceptableDistance, double acceptableAngle){
         //(Math.abs(desiredAngle - globalPositionUpdate.returnOrientation())+ acceptableAngle)%360 > acceptableAngle + acceptableAngle) this takes into account angles above or below within the acceptable angle range
-
         while ( Math.abs(targetX-globalPositionUpdate.returnXCoordinate()) > acceptableDistance || Math.abs(targetY-globalPositionUpdate.returnYCoordinate()) > acceptableDistance
-                    || (Math.abs(desiredAngle - globalPositionUpdate.returnOrientation()) + acceptableAngle)%360 - acceptableAngle > acceptableAngle) {
+                || (Math.abs(desiredAngle - globalPositionUpdate.returnOrientation()) + acceptableAngle)%360 - acceptableAngle > acceptableAngle) {
 
             //this is testing stuff
             double dist = Math.hypot(Math.abs(targetX-globalPositionUpdate.returnXCoordinate()), Math.abs(targetY-globalPositionUpdate.returnYCoordinate()));
@@ -101,9 +107,8 @@ public class RobotMovement {
             double power = (robotPower-minPow)/(highDistBound-lowDistBound)*(dist-lowDistBound)+minPow;
             power = Range.clip(power,0.1,robotPower);
 
-            setTargetPowers(targetX,targetY,desiredAngle,power,turnSpeed);
+            setTargetPowers(targetX,targetY,desiredAngle,robotPower,turnSpeed);
         }
-        stop();
     }
 
     public void headTowardsPoint (double targetX, double targetY, double desiredHeading, double robotPower, double turnSpeed, double acceptableDistance) {
@@ -112,6 +117,17 @@ public class RobotMovement {
         while ( Math.abs(targetX-globalPositionUpdate.returnXCoordinate()) > acceptableDistance || Math.abs(targetY-globalPositionUpdate.returnYCoordinate()) > acceptableDistance) {
             double desiredAngle = Math.toDegrees(Math.atan2(targetY - globalPositionUpdate.returnYCoordinate(),targetX - globalPositionUpdate.returnXCoordinate())) + desiredHeading;
             setTargetPowers(targetX,targetY,desiredAngle,robotPower,turnSpeed);
+        }
+        stop();
+    }
+
+    public void pathFindTo (double targetX, double targetY, double desiredAngle, double robotPower, double turnSpeed, double acceptableDistance, double acceptableAngle){
+        pathFind.calculatePath((int)globalPositionUpdate.returnXCoordinate(), (int)globalPositionUpdate.returnYCoordinate(), (int)targetX, (int)targetY);
+        for (int i = 1; !pathFind.path.isEmpty(); i++) {
+            Point nextPoint = pathFind.path.pop();
+            if (i % 3 == 0) {
+                runToPosition(nextPoint.x,nextPoint.y,desiredAngle,robotPower,turnSpeed,acceptableDistance,acceptableAngle);
+            }
         }
         stop();
     }

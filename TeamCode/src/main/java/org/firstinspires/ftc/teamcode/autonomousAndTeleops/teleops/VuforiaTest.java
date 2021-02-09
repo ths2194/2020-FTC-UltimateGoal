@@ -2,22 +2,22 @@ package org.firstinspires.ftc.teamcode.autonomousAndTeleops.teleops;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.robot.vision.TensorFlow;
+import org.firstinspires.ftc.teamcode.robot.vision.Vuforia;
+import org.firstinspires.ftc.teamcode.robot.vision.VuforiaFeedback;
 
-@TeleOp(name = "TensorFlowTest", group = "TeleOp")
+@TeleOp(name = "VuforiaTest", group = "TeleOp")
 // Replace SkeletonOpMode with name of OpMode
 
 
-public class TensorFlowTest extends LinearOpMode {
+public class VuforiaTest extends LinearOpMode {
 
 
     @Override
     public void runOpMode() {
 
         //Initialization
-        TensorFlow myTensorFlow = new TensorFlow(hardwareMap);
+        Vuforia myVuforia = new Vuforia(hardwareMap);
         //Declare local variables
         //Initialization code: example: map hardware
 
@@ -28,19 +28,18 @@ public class TensorFlowTest extends LinearOpMode {
         //or while loop with update telemetry for driver control
 
         while (opModeIsActive()){
-
-            int numOfRings = myTensorFlow.getNumberOfRings();
-
-            while (numOfRings == 0){
-                numOfRings = myTensorFlow.getNumberOfRings();
+            VuforiaFeedback feedback = myVuforia.detectTarget();
+            if (feedback.isSeenTarget()) {
+                telemetry.addData("Name", feedback.getTargetName());
+                telemetry.addData("X", feedback.getX());
+                telemetry.addData("Y", feedback.getY());
+                telemetry.addData("Angle", feedback.getAngle());
                 telemetry.update();
             }
 
-            telemetry.addData("Num:", numOfRings);
-            telemetry.update();
         }
 
-        myTensorFlow.stop();
+//        myTensorFlow.stop();
 
 
 

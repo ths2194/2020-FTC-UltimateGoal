@@ -34,29 +34,15 @@ public class RunToPositionWithOdometry extends LinearOpMode {
 
 //        BEGIN OP MODE HERE:
 
-        movement.runToPosition(0,10,90,0.4,0.1,0.5,1);
-        sleep(1000);
-        movement.runToPosition(10,10,90,0.4,0.2,0.5,1);
-        sleep(1000);
-        movement.runToPosition(10,0,90,0.4,0.1,0.5,1);
-        sleep(1000);
-        movement.runToPosition(0,0,90,0.4,0.2,0.5,1);
-
-//        movement.runToPosition(0, 0, 270, 0.3, 0.3, 0.1,1);
-//
-//        movement.runToPosition(0, 0, 90, 0.3,   0.3, 0.1,1);
-//
-//        movement.runToPosition(0, 30, 90, 0.2, 0.1, 0.2,2);
-//        movement.runToPosition(0, 0, 90, 0.2, 0.1, 0.2,2);
-////
-//        movement.runToPosition(0, 0, 270, 0.2, 0.3, 0.1,1);
-//        movement.runToPosition(0, 0, 90, 0.2, 0.3, 0.1,1);
 
 
-//        movement.runToPosition(20, 0, 90, 0.3, 0.3, 0.2,2);
-//
-//        movement.runToPosition(0, 0, 90, 0.3, 0.3, 0.2,2);
-//
+        movement.runToPositionAndStop(0,50,90,0.4,0.1,2,2);
+        sleep(1000);
+        movement.runToPositionAndStop(25,25,90,0.4,0.2,2,2);
+        sleep(1000);
+        movement.runToPositionAndStop(25,0,90,0.4,0.1,2,2);
+        sleep(1000);
+        movement.runToPositionAndStop(0,0,180,0.4,0.2,2,2);
 
         while (opModeIsActive()) {
             //Display Global (x, y, theta) coordinates
@@ -76,9 +62,9 @@ public class RunToPositionWithOdometry extends LinearOpMode {
         backLeftMotor = hardwareMap.dcMotor.get("BLM");
 
         //DO: change this according to where odometry is mounted
-        verticalLeft = frontRightMotor;
-        verticalRight = frontLeftMotor;
-        horizontal = backLeftMotor;
+        verticalLeft = backLeftMotor;
+        verticalRight = backRightMotor;
+        horizontal = frontRightMotor;
 
         frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -112,9 +98,10 @@ public class RunToPositionWithOdometry extends LinearOpMode {
         positionThread.start();
 
         //DO: reverse needed encoders
-//        globalPositionUpdate.reverseRightEncoder();
-//        globalPositionUpdate.reverseRightEncoder();
+        globalPositionUpdate.reverseRightEncoder();
+        globalPositionUpdate.reverseLeftEncoder();
 //        globalPositionUpdate.reverseNormalEncoder();
+
     }
 
 

@@ -7,10 +7,11 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.robot.odometry.OdometryGlobalCoordinatePosition;
+import org.firstinspires.ftc.teamcode.robot.robotClasses.RobotMovement;
 
-//For testing
-@TeleOp(name = "Sideways")
-public class Sideways extends LinearOpMode {
+
+@TeleOp(name = "Path Find To Position")
+public class PathFindToPosition extends LinearOpMode {
     //    DO: change motors
     //Drive motors
     DcMotor frontRightMotor, backRightMotor, frontLeftMotor, backLeftMotor;
@@ -29,29 +30,14 @@ public class Sideways extends LinearOpMode {
         waitForStart();
         initializeOdometry();
 
+        RobotMovement movement = new RobotMovement(frontRightMotor,frontLeftMotor,backRightMotor,backLeftMotor,telemetry,globalPositionUpdate);
+
 //        BEGIN OP MODE HERE:
 
-        double FLMpower = 0.4;
-        double FRMpower = -0.4;
-        double BLMpower = -0.4;
-        double BRMpower = 0.4;
-
-        FLMpower += 0.03-0.005;
-        BLMpower += 0.03-0.005;
-        FRMpower += -.1+0.02-0.004;
-        BRMpower += -.1+0.02-0.004;
 
 
-        frontLeftMotor.setPower(-1.5*FLMpower);
-        frontRightMotor.setPower(-1.5*FRMpower);
-        backLeftMotor.setPower(-1.5*BLMpower);
-        backRightMotor.setPower(-1.5*BRMpower);
+        movement.pathFindTo(60,60,0,0.4,0.1,2,2);
 
-        sleep(1000);
-        frontLeftMotor.setPower(0);
-        frontRightMotor.setPower(0);
-        backLeftMotor.setPower(0);
-        backRightMotor.setPower(0);
 
         while (opModeIsActive()) {
             //Display Global (x, y, theta) coordinates
@@ -71,9 +57,9 @@ public class Sideways extends LinearOpMode {
         backLeftMotor = hardwareMap.dcMotor.get("BLM");
 
         //DO: change this according to where odometry is mounted
-        verticalLeft = frontRightMotor;
-        verticalRight = frontLeftMotor;
-        horizontal = backLeftMotor;
+        verticalLeft = backLeftMotor;
+        verticalRight = backRightMotor;
+        horizontal = frontRightMotor;
 
         frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -103,13 +89,14 @@ public class Sideways extends LinearOpMode {
         globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeft, verticalRight, horizontal, COUNTS_PER_INCH, 75);
         Thread positionThread = new Thread(globalPositionUpdate);
         //DO: set robot starting position
-        globalPositionUpdate.setPosition(0, 0, 90);
+        globalPositionUpdate.setPosition(-20, 20, 0);
         positionThread.start();
 
         //DO: reverse needed encoders
-//        globalPositionUpdate.reverseRightEncoder();
-//        globalPositionUpdate.reverseRightEncoder();
+        globalPositionUpdate.reverseRightEncoder();
+        globalPositionUpdate.reverseLeftEncoder();
 //        globalPositionUpdate.reverseNormalEncoder();
+
     }
 
 

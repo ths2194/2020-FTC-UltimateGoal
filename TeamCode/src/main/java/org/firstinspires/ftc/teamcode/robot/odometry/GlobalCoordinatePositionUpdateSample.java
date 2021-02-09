@@ -20,7 +20,7 @@ public class GlobalCoordinatePositionUpdateSample extends LinearOpMode {
 
 
     //Hardware map names for the encoder wheels. Again, these will change for each robot and need to be updated below
-    String verticalLeftEncoderName = "FRM", verticalRightEncoderName = "FLM", horizontalEncoderName = "BLM";
+    String verticalLeftEncoderName = "BLM", verticalRightEncoderName = "BRM", horizontalEncoderName = "FRM";
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -42,7 +42,8 @@ public class GlobalCoordinatePositionUpdateSample extends LinearOpMode {
         */
 
         //right motor will be reversed on the actual robot so we reverse it here
-        verticalLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        verticalRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        horizontal.setDirection(DcMotorSimple.Direction.REVERSE);
 
         //Set the mode of the odometry encoders to RUN_WITHOUT_ENCODER
         verticalRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -67,10 +68,10 @@ public class GlobalCoordinatePositionUpdateSample extends LinearOpMode {
         positionThread.start();
 
 
-        // reverses odometry
-//        globalPositionUpdate.reverseRightEncoder();
+        // reverse odometry
+        globalPositionUpdate.reverseRightEncoder();
 //        globalPositionUpdate.reverseNormalEncoder();
-//        globalPositionUpdate.reverseLeftEncoder();
+        globalPositionUpdate.reverseLeftEncoder();
 
 
         while(opModeIsActive()){
