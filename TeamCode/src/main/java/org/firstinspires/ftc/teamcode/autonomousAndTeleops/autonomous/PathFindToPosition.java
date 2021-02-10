@@ -36,8 +36,8 @@ public class PathFindToPosition extends LinearOpMode {
 
 
 
-        movement.pathFindTo(60,60,0,0.4,0.1,2,2);
-
+//        movement.pathFindTo(60,60,0,0.5,0.1,3,2);
+        movement.pathFindToWithHeading(60,60,0,0.5,0.2,3);
 
         while (opModeIsActive()) {
             //Display Global (x, y, theta) coordinates

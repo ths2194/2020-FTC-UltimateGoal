@@ -12,7 +12,7 @@ public class PathFinding {
 
     public boolean calculatePath(int startX, int startY, int targetX, int targetY){
         //Runs A* pathfinding
-
+        Point target = null;
         int startI = Field.getGridI(startY);
         int startJ = Field.getGridJ(startX);
         int targetI = Field.getGridI(targetY);
@@ -33,7 +33,8 @@ public class PathFinding {
             Point thisPoint = pq.poll();
 
             if (thisPoint.i == targetI && thisPoint.j == targetJ){
-                newPath.add(thisPoint);
+//                newPath.add(thisPoint);
+                target = thisPoint;
                 targetReached = true;
                 break;
             }
@@ -63,19 +64,37 @@ public class PathFinding {
 
         if (!targetReached) return false;
 
+        int direction = -1;
+        Point lastPoint = target;
         int currI = targetI; int currJ = targetJ;
         while (!(currI==startI && currJ==startJ)){
-            newPath.add(pointBefore[currI][currJ]);
-            int newI = pointBefore[currI][currJ].i;
-            int newJ = pointBefore[currI][currJ].j;
-            currI = newI;
-            currJ = newJ;
+            //adds points to path
+            int newDirection = calculateDirection(lastPoint,pointBefore[currI][currJ]);
+            if (newDirection != direction){
+                direction = newDirection;
+                newPath.add(lastPoint);
+            }
+            lastPoint = pointBefore[currI][currJ];
+            currI = lastPoint.i;
+            currJ = lastPoint.j;
         }
 
         path = newPath;
 
         return true;
 
+    }
+
+    static int calculateDirection (Point a, Point pointBeforeA){
+        if (pointBeforeA.x==a.x && pointBeforeA.y>a.y) return 0;
+        if (pointBeforeA.x>a.x && pointBeforeA.y==a.y) return 1;
+        if (pointBeforeA.x==a.x && pointBeforeA.y<a.y) return 2;
+        if (pointBeforeA.x<a.x && pointBeforeA.y==a.y) return 3;
+        if (pointBeforeA.x>a.x && pointBeforeA.y>a.y) return 4;
+        if (pointBeforeA.x>a.x && pointBeforeA.y<a.y) return 5;
+        if (pointBeforeA.x<a.x && pointBeforeA.y<a.y) return 6;
+        if (pointBeforeA.x<a.x && pointBeforeA.y>a.y) return 7;
+        return -1;
     }
 
     static int D = 1; static double D2 = Math.sqrt(2);

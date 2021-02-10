@@ -18,4 +18,8 @@ public class Point implements Comparable<Point>{
         return Double.compare(this.f,that.f);
     }
 
+    @Override
+    public String toString() {
+        return  x + ", " + y;
+    }
 }

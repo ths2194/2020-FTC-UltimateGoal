@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.robot.robotClasses.Pathfinding.Field;
+import org.firstinspires.ftc.teamcode.robot.robotClasses.Pathfinding.PathFinding;
 import org.firstinspires.ftc.teamcode.robot.vision.Vuforia;
 import org.firstinspires.ftc.teamcode.robot.vision.VuforiaFeedback;
 
@@ -22,7 +23,9 @@ public class InitializeFieldTest extends LinearOpMode {
         //Initialization code: example: map hardware
 
         Field field = new Field();
-        field.visualizeStartField();
+//        field.visualizeStartField();
+        PathFinding pathFinding = new PathFinding();
+        pathFinding.calculatePath(-20,20,60,60);
 
         //Wait for game to start
         waitForStart();

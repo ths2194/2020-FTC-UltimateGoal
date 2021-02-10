@@ -105,10 +105,36 @@ public class RobotMovement {
             double dist = Math.hypot(Math.abs(targetX-globalPositionUpdate.returnXCoordinate()), Math.abs(targetY-globalPositionUpdate.returnYCoordinate()));
             double minPow = 0.1; double lowDistBound = 1; double highDistBound = 3;
             double power = (robotPower-minPow)/(highDistBound-lowDistBound)*(dist-lowDistBound)+minPow;
-            power = Range.clip(power,0.1,robotPower);
+            power = Range.clip(power,0.2,robotPower);
 
+            setTargetPowers(targetX,targetY,desiredAngle,power,turnSpeed);
+        }
+    }
+
+    public void runPastPosition(double targetX, double targetY, double desiredAngle, double robotPower, double turnSpeed, double acceptableDistance){
+        //(Math.abs(desiredAngle - globalPositionUpdate.returnOrientation())+ acceptableAngle)%360 > acceptableAngle + acceptableAngle) this takes into account angles above or below within the acceptable angle range
+        double startX = globalPositionUpdate.returnXCoordinate();
+        double startY = globalPositionUpdate.returnYCoordinate();
+        while ( !isPastTarget(startX,startY,targetX,targetY,acceptableDistance) ) {
             setTargetPowers(targetX,targetY,desiredAngle,robotPower,turnSpeed);
         }
+    }
+
+    public boolean isPastTarget (double startX, double startY, double targetX, double targetY, double acceptableDistance) {
+        boolean xIsPast, yIsPast;
+        if (targetX>startX) {
+            xIsPast = globalPositionUpdate.returnXCoordinate() > targetX-acceptableDistance;
+        }
+        else {
+            xIsPast = globalPositionUpdate.returnXCoordinate() < targetX+acceptableDistance;
+        }
+        if (targetY>startY) {
+            yIsPast = globalPositionUpdate.returnYCoordinate() > targetY-acceptableDistance;
+        }
+        else {
+            yIsPast = globalPositionUpdate.returnYCoordinate() < targetY+acceptableDistance;
+        }
+        return xIsPast && yIsPast;
     }
 
     public void headTowardsPoint (double targetX, double targetY, double desiredHeading, double robotPower, double turnSpeed, double acceptableDistance) {
@@ -123,13 +149,22 @@ public class RobotMovement {
 
     public void pathFindTo (double targetX, double targetY, double desiredAngle, double robotPower, double turnSpeed, double acceptableDistance, double acceptableAngle){
         pathFind.calculatePath((int)globalPositionUpdate.returnXCoordinate(), (int)globalPositionUpdate.returnYCoordinate(), (int)targetX, (int)targetY);
-        for (int i = 1; !pathFind.path.isEmpty(); i++) {
+        while (!pathFind.path.isEmpty()) {
             Point nextPoint = pathFind.path.pop();
-            if (i % 3 == 0) {
-                runToPosition(nextPoint.x,nextPoint.y,desiredAngle,robotPower,turnSpeed,acceptableDistance,acceptableAngle);
-            }
+            runPastPosition(nextPoint.x,nextPoint.y,desiredAngle,robotPower,turnSpeed,1);
         }
-        stop();
+        runToPositionAndStop(targetX,targetY,desiredAngle,Math.min(0.5,robotPower),Math.min(0.5,robotPower),acceptableDistance,acceptableAngle);
+    }
+
+    public void pathFindToWithHeading (double targetX, double targetY, double desiredHeading, double robotPower, double turnSpeed, double acceptableDistance){
+        pathFind.calculatePath((int)globalPositionUpdate.returnXCoordinate(), (int)globalPositionUpdate.returnYCoordinate(), (int)targetX, (int)targetY);
+        double desiredAngle = Math.toDegrees(Math.atan2(targetY - globalPositionUpdate.returnYCoordinate(),targetX - globalPositionUpdate.returnXCoordinate())) + desiredHeading;
+        while (!pathFind.path.isEmpty()) {
+            Point nextPoint = pathFind.path.pop();
+            desiredAngle = Math.toDegrees(Math.atan2(nextPoint.y - globalPositionUpdate.returnYCoordinate(),nextPoint.x - globalPositionUpdate.returnXCoordinate())) + desiredHeading;
+            runPastPosition(nextPoint.x,nextPoint.y,desiredAngle,robotPower,turnSpeed,1);
+        }
+        runToPositionAndStop(targetX,targetY,desiredAngle,Math.min(0.5,robotPower),Math.min(0.5,robotPower),acceptableDistance,100);
     }
 
     void displayTelemetry (double frm, double flm, double brm, double blm) {
