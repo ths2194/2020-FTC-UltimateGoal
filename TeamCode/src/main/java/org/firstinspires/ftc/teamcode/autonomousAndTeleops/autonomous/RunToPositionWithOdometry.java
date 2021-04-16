@@ -36,13 +36,13 @@ public class RunToPositionWithOdometry extends LinearOpMode {
 
 
 
-        movement.runToPositionAndStop(0,50,90,0.4,0.1,2,2);
+        movement.runToPositionAndStop(0,50,90,0.5,0.1,2,2);
         sleep(1000);
-        movement.runToPositionAndStop(25,25,90,0.4,0.2,2,2);
+        movement.runToPositionAndStop(25,25,90,0.5,0.2,2,2);
         sleep(1000);
-        movement.runToPositionAndStop(25,0,90,0.4,0.1,2,2);
+        movement.runToPositionAndStop(25,0,90,0.5,0.1,2,2);
         sleep(1000);
-        movement.runToPositionAndStop(0,0,180,0.4,0.2,2,2);
+        movement.runToPositionAndStop(0,0,180,0.5,0.2,2,2);
 
         while (opModeIsActive()) {
             //Display Global (x, y, theta) coordinates

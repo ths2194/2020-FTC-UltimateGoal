@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.robot.robotClasses;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.robot.odometry.OdometryGlobalCoordinatePosition;
@@ -39,7 +40,7 @@ public class RobotMovement {
 
         //changeY is the sideways change, changeX is forward change
         double relativeChangeX = Math.cos(angleDifference);
-        double relativeChangeY = Math.sin(angleDifference);
+        double relativeChangeY = Math.sin(angleDifference)*1.1;
 
         telemetry.addData("relativeChangeSideways",relativeChangeY);
 
@@ -103,9 +104,9 @@ public class RobotMovement {
 
             //this is testing stuff
             double dist = Math.hypot(Math.abs(targetX-globalPositionUpdate.returnXCoordinate()), Math.abs(targetY-globalPositionUpdate.returnYCoordinate()));
-            double minPow = 0.1; double lowDistBound = 1; double highDistBound = 3;
+            double minPow = 0.25; double lowDistBound = 1; double highDistBound = 3;
             double power = (robotPower-minPow)/(highDistBound-lowDistBound)*(dist-lowDistBound)+minPow;
-            power = Range.clip(power,0.2,robotPower);
+            power = Range.clip(power, minPow ,robotPower);
 
             setTargetPowers(targetX,targetY,desiredAngle,power,turnSpeed);
         }
@@ -139,8 +140,18 @@ public class RobotMovement {
 
     public void headTowardsPoint (double targetX, double targetY, double desiredHeading, double robotPower, double turnSpeed, double acceptableDistance) {
         // for desiredHeading, front of the robot is 0, back is 180, right side is 90, and left side is -90
-
         while ( Math.abs(targetX-globalPositionUpdate.returnXCoordinate()) > acceptableDistance || Math.abs(targetY-globalPositionUpdate.returnYCoordinate()) > acceptableDistance) {
+            double desiredAngle = Math.toDegrees(Math.atan2(targetY - globalPositionUpdate.returnYCoordinate(),targetX - globalPositionUpdate.returnXCoordinate())) + desiredHeading;
+            setTargetPowers(targetX,targetY,desiredAngle,robotPower,turnSpeed);
+        }
+        stop();
+    }
+
+    public void headPastPoint (double targetX, double targetY, double desiredHeading, double robotPower, double turnSpeed, double acceptableDistance) {
+        // for desiredHeading, front of the robot is 0, back is 180, right side is 90, and left side is -90
+        double startX = globalPositionUpdate.returnXCoordinate();
+        double startY = globalPositionUpdate.returnYCoordinate();
+        while ( !isPastTarget(startX,startY,targetX,targetY,acceptableDistance) ) {
             double desiredAngle = Math.toDegrees(Math.atan2(targetY - globalPositionUpdate.returnYCoordinate(),targetX - globalPositionUpdate.returnXCoordinate())) + desiredHeading;
             setTargetPowers(targetX,targetY,desiredAngle,robotPower,turnSpeed);
         }
@@ -165,6 +176,62 @@ public class RobotMovement {
             runPastPosition(nextPoint.x,nextPoint.y,desiredAngle,robotPower,turnSpeed,1);
         }
         runToPositionAndStop(targetX,targetY,desiredAngle,Math.min(0.5,robotPower),Math.min(0.5,robotPower),acceptableDistance,100);
+    }
+
+    public void pathFindToRestrictedDirectionAndStop(double targetX, double targetY, double desiredAngle, double robotPower, double turnSpeed, double acceptableDistance, double acceptableAngle){
+        pathFind.calculatePath((int)globalPositionUpdate.returnXCoordinate(), (int)globalPositionUpdate.returnYCoordinate(), (int)targetX, (int)targetY);
+        double desiredAngleForMovement = Math.toDegrees(Math.atan2(targetY - globalPositionUpdate.returnYCoordinate(),targetX - globalPositionUpdate.returnXCoordinate()));
+        while (!pathFind.path.isEmpty()){
+            Point nextPoint = pathFind.path.pop();
+            double angleToTarget = Math.toDegrees(Math.atan2(nextPoint.y - globalPositionUpdate.returnYCoordinate(), nextPoint.x - globalPositionUpdate.returnXCoordinate()));
+            double powerMulitplier = 1;
+            if ( isAngleWithinXDegrees(angleToTarget,desiredAngle,60) ) {
+                desiredAngleForMovement = angleToTarget;
+            }
+            else if ( isAngleWithinXDegrees(angleToTarget + 180,desiredAngle,60) ) {
+                desiredAngleForMovement = angleToTarget + 180;
+            }
+            else if ( isAngleWithinXDegrees(angleToTarget + 90,desiredAngle,60) ) {
+                desiredAngleForMovement = angleToTarget + 90;
+                powerMulitplier *= 1.4;
+            }
+            else if ( isAngleWithinXDegrees(angleToTarget - 90,desiredAngle,60) ){
+                desiredAngleForMovement = angleToTarget - 90;
+                powerMulitplier *= 1.4;
+            }
+            runPastPosition(nextPoint.x,nextPoint.y,desiredAngleForMovement,robotPower*powerMulitplier,turnSpeed,1);
+        }
+        runToPositionAndStop(targetX,targetY,desiredAngle,Math.min(0.5,robotPower),Math.min(0.5,robotPower),acceptableDistance,acceptableAngle);
+    }
+
+    public void pathFindToRestrictedDirectionNoStop(double targetX, double targetY, double desiredAngle, double robotPower, double turnSpeed, double acceptableDistance, double acceptableAngle){
+        pathFind.calculatePath((int)globalPositionUpdate.returnXCoordinate(), (int)globalPositionUpdate.returnYCoordinate(), (int)targetX, (int)targetY);
+        double desiredAngleForMovement = Math.toDegrees(Math.atan2(targetY - globalPositionUpdate.returnYCoordinate(),targetX - globalPositionUpdate.returnXCoordinate()));
+        while (!pathFind.path.isEmpty()){
+            Point nextPoint = pathFind.path.pop();
+            double angleToTarget = Math.toDegrees(Math.atan2(nextPoint.y - globalPositionUpdate.returnYCoordinate(), nextPoint.x - globalPositionUpdate.returnXCoordinate()));
+            double powerMulitplier = 1;
+            if ( isAngleWithinXDegrees(angleToTarget,desiredAngle,60) ) {
+                desiredAngleForMovement = angleToTarget;
+            }
+            else if ( isAngleWithinXDegrees(angleToTarget + 180,desiredAngle,60) ) {
+                desiredAngleForMovement = angleToTarget + 180;
+            }
+            else if ( isAngleWithinXDegrees(angleToTarget + 90,desiredAngle,60) ) {
+                desiredAngleForMovement = angleToTarget + 90;
+                powerMulitplier *= 1.4;
+            }
+            else if ( isAngleWithinXDegrees(angleToTarget - 90,desiredAngle,60) ){
+                desiredAngleForMovement = angleToTarget - 90;
+                powerMulitplier *= 1.4;
+            }
+            runPastPosition(nextPoint.x,nextPoint.y,desiredAngleForMovement,robotPower*powerMulitplier,turnSpeed,1);
+        }
+        runToPosition(targetX,targetY,desiredAngle,Math.min(0.5,robotPower),Math.min(0.5,robotPower),acceptableDistance,acceptableAngle);
+    }
+
+    boolean isAngleWithinXDegrees (double angle1, double angle2, double xDegrees) {
+        return (Math.abs(angle1 - angle2) + xDegrees)%360 - xDegrees <= xDegrees;
     }
 
     void displayTelemetry (double frm, double flm, double brm, double blm) {

@@ -10,8 +10,8 @@ import org.firstinspires.ftc.teamcode.robot.odometry.OdometryGlobalCoordinatePos
 import org.firstinspires.ftc.teamcode.robot.robotClasses.RobotMovement;
 
 
-@TeleOp(name = "Path Find To Position")
-public class PathFindToPosition extends LinearOpMode {
+@TeleOp(name = "Path Find To Position2")
+public class PathFindToPosition2 extends LinearOpMode {
     //    DO: change motors
     //Drive motors
     DcMotor frontRightMotor, backRightMotor, frontLeftMotor, backLeftMotor;
@@ -37,12 +37,10 @@ public class PathFindToPosition extends LinearOpMode {
 
 
 //        movement.pathFindTo(60,60,0,0.5,0.1,3,2);
-//        movement.pathFindToWithHeading(60,60,0,0.5,0.2,3);
-        movement.pathFindToRestrictedDirectionAndStop(60,60,0,0.5,0.2,3,10);
+        movement.pathFindToWithHeading(60,60,0,0.5,0.2,3);
+//        movement.pathFindToRestrictedDirection(60,60,0,0.5,0.2,3,10);
         sleep(1000);
-        movement.pathFindToRestrictedDirectionAndStop(-20,20,0,0.5,0.2,3,10);
-
-//        movement.runToPositionAndStop(-20,20,0,0.5,0.2,3,3);
+        movement.runToPositionAndStop(-20,20,0,0.5,0.2,3,3);
 
         while (opModeIsActive()) {
             //Display Global (x, y, theta) coordinates
