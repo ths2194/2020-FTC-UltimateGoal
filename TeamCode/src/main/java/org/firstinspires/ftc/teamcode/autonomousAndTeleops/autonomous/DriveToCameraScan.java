@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomousAndTeleops.autonomous;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
@@ -10,7 +12,8 @@ import org.firstinspires.ftc.teamcode.robot.robotClasses.RobotMovement;
 import org.firstinspires.ftc.teamcode.robot.vision.TensorFlow;
 
 
-@TeleOp(name = "DriveToCameraScan")
+@Autonomous(name = "DriveToCameraScan")
+@Disabled
 public class DriveToCameraScan extends MyOpMode {
 
     @Override
@@ -18,7 +21,7 @@ public class DriveToCameraScan extends MyOpMode {
         initializeWithOdometry();
         gripper.setPosition(0);
         TensorFlow myTensorFlow = new TensorFlow(hardwareMap);
-        RobotMovement movement = new RobotMovement(FRM,FLM,BRM,BLM,telemetry,globalPositionUpdate);
+        RobotMovement movement = new RobotMovement(FRM,FLM,BRM,BLM,globalPositionUpdate,this);
         shooterPush.setPosition(0.4);
 
         telemetry.addData("Initialization:","complete");

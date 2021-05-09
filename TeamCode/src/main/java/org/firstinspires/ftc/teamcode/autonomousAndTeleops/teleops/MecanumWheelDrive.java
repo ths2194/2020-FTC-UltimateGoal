@@ -1,32 +1,37 @@
 package org.firstinspires.ftc.teamcode.autonomousAndTeleops.teleops;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.ReadWriteFile;
 
 import org.firstinspires.ftc.teamcode.opModes.MyOpMode;
 import org.firstinspires.ftc.teamcode.robot.robotClasses.RobotMovement;
+
+import java.util.StringTokenizer;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 
 @TeleOp(name = "MecanumWheelDrive", group = "TeleOp")
+@Disabled
 
 public class MecanumWheelDrive extends MyOpMode {
-
     @Override
     public void runOpMode() {
         initializeWithOdometry();
-        RobotMovement movement = new RobotMovement(FRM,FLM,BRM,BLM,telemetry,globalPositionUpdate);
+        RobotMovement movement = new RobotMovement(FRM,FLM,BRM,BLM,globalPositionUpdate,this);
 
         double directionMultiplier = 1;
-        double intakeMotorPower = 0.7;
-        double targetShooterVelocity = 1055;
+        double intakeMotorPower = 0.9;
+        double targetShooterVelocity = 1455;
 
         double shootX = -5;
         double shootY = 32;
         double shootAngle = -5;
 
-        boolean readyToShoot = false;
+        boolean shooterPushOn = false;
         boolean runningToPosition = false;
 
         int intakeMult = 0;
@@ -35,7 +40,7 @@ public class MecanumWheelDrive extends MyOpMode {
         gripper.setPosition(0.2);
 
         waitForStart();
-        globalPositionUpdate.setPosition(10, 29, 0);
+        initializeGlobalPosition();
 
         if (opModeIsActive()) {
             while (opModeIsActive()) {
@@ -58,11 +63,11 @@ public class MecanumWheelDrive extends MyOpMode {
                 // set power
                 if (!runningToPosition) {
                     if (controller1.left_trigger > 0) {
-                        setMotorPowers(FLPower,FRPower,BLPower,BRPower,directionMultiplier);
+                        movement.setMotorPowers(FLPower,FRPower,BLPower,BRPower,directionMultiplier);
                     } else if (controller1.leftBumper()) {
-                        setMotorPowers(FLPower,FRPower,BLPower,BRPower,directionMultiplier*0.2);
+                        movement.setMotorPowers(FLPower,FRPower,BLPower,BRPower,directionMultiplier*0.5);
                     } else {
-                        setMotorPowers(FLPower,FRPower,BLPower,BRPower,directionMultiplier*0.5);
+                        movement.setMotorPowers(FLPower,FRPower,BLPower,BRPower,directionMultiplier*0.65);
                     }
                 } else {
                     double dist = Math.hypot(shootX-globalPositionUpdate.returnXCoordinate(), shootY-globalPositionUpdate.returnYCoordinate());
@@ -78,11 +83,19 @@ public class MecanumWheelDrive extends MyOpMode {
                     }
                 }
 
-                if (controller1.AOnce() || controller2.AOnce()){
-                    if (intakeMult != 1) { intakeMult = 1; } else { intakeMult = 0; }
+                if (controller1.AOnce()){
+                    if (intakeMult != 1) {
+                        intakeMult = 1;
+                    } else {
+                        intakeMult = 0;
+                    }
                 }
-                else if (controller1.YOnce() || controller2.YOnce()){
-                    if (intakeMult != -1) { intakeMult = -1; } else { intakeMult = 0; }
+                else if (controller1.YOnce()){
+                    if (intakeMult != -1) {
+                        intakeMult = -1;
+                    } else {
+                        intakeMult = 0;
+                    }
                 }
 
                 if (controller1.dpadUpOnce()){
@@ -97,7 +110,13 @@ public class MecanumWheelDrive extends MyOpMode {
                 }
 
                 if (controller2.BOnce()) {
-                    shootersOn = !shootersOn;
+                    if (shootersOn) {
+                        shootersOn = false;
+                        shooterPushOn = false;
+                    }
+                    else {
+                        shootersOn = true;
+                    }
                 }
 
                 if (controller1.dpadRightOnce()) {
@@ -117,11 +136,11 @@ public class MecanumWheelDrive extends MyOpMode {
                 }
 
                 if (controller2.rightBumperOnce()) {
-                    readyToShoot = !readyToShoot;
+                    shooterPushOn = !shooterPushOn;
                 }
 
                 if (controller2.XOnce()) {
-                    readyToShoot = false;
+                    shooterPushOn = false;
                 }
 
                 if (Math.hypot(controller1.left_stick_x,controller1.left_stick_y) > 0.05 || Math.hypot(controller1.right_stick_x,controller1.right_stick_y) > 0.05){
@@ -178,8 +197,16 @@ public class MecanumWheelDrive extends MyOpMode {
                     }
                 }
 
+                if (controller2.A()) {
+                    intakeMotor.setPower(intakeMotorPower * 0.5);
+                }
+                else if (controller2.Y()) {
+                    intakeMotor.setPower(intakeMotorPower * -0.5);
+                }
+                else {
+                    intakeMotor.setPower(intakeMotorPower * intakeMult);
+                }
 
-                intakeMotor.setPower(intakeMotorPower * intakeMult);
                 if (shootersOn) {
                     ((DcMotorEx) upperShooter).setVelocity(targetShooterVelocity);
                     ((DcMotorEx) lowerShooter).setVelocity(targetShooterVelocity);
@@ -188,11 +215,10 @@ public class MecanumWheelDrive extends MyOpMode {
                     ((DcMotorEx) upperShooter).setVelocity(0);
                     ((DcMotorEx) lowerShooter).setVelocity(0);
                 }
-                if (readyToShoot) {
-                    if ( Math.abs(((DcMotorEx) upperShooter).getVelocity() - targetShooterVelocity) < 20 && Math.abs(((DcMotorEx) lowerShooter).getVelocity() - targetShooterVelocity) < 20) {
+                if (shooterPushOn) {
+                    if ( !shootersOn || (Math.abs(((DcMotorEx) upperShooter).getVelocity() - targetShooterVelocity) < 20 && Math.abs(((DcMotorEx) lowerShooter).getVelocity() - targetShooterVelocity) < 20) ) {
                         shooterPush.setPosition(shooterPushOnPosition);
                     }
-//                    shooterPush.setPosition(shooterPushOnPosition);
                 }
                 else {
                     shooterPush.setPosition(shooterPushOffPosition);
@@ -200,7 +226,7 @@ public class MecanumWheelDrive extends MyOpMode {
 
 
                 if (runningToPosition) telemetry.addData("Running To Position","In Progress");
-                if (readyToShoot) telemetry.addData("Ready To Shoot", "Waiting For Motors");
+                if (shooterPushOn) telemetry.addData("Ready To Shoot", "Waiting For Motors");
                 telemetry.addData("IntakeMotorPower",intakeMotor.getPower());
                 telemetry.addData("Target Shooter Velocity", targetShooterVelocity);
                 telemetry.addData("Actual Shooter Velocity", ((DcMotorEx) upperShooter).getVelocity());
@@ -217,6 +243,18 @@ public class MecanumWheelDrive extends MyOpMode {
 
     }
 
+    void initializeGlobalPosition () {
+        String endPositionValues = ReadWriteFile.readFile(endPosition).trim();
+        if (endPositionValues.equals("")) {
+            globalPositionUpdate.setPosition(10, 29, 0);
+        } else {
+            StringTokenizer tok = new StringTokenizer(endPositionValues);
+            double xPos = Double.parseDouble(tok.nextToken());
+            double yPos = Double.parseDouble(tok.nextToken());
+            double robotAngle = Double.parseDouble(tok.nextToken());
+            globalPositionUpdate.setPosition(xPos,yPos,robotAngle);
+        }
+    }
 
 }
 

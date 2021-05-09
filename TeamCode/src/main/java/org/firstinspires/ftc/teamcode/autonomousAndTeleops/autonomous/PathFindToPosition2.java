@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomousAndTeleops.autonomous;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,7 +12,8 @@ import org.firstinspires.ftc.teamcode.robot.odometry.OdometryGlobalCoordinatePos
 import org.firstinspires.ftc.teamcode.robot.robotClasses.RobotMovement;
 
 
-@TeleOp(name = "Path Find To Position2")
+@Autonomous(name = "Path Find To Position2")
+@Disabled
 public class PathFindToPosition2 extends LinearOpMode {
     //    DO: change motors
     //Drive motors
@@ -30,7 +33,7 @@ public class PathFindToPosition2 extends LinearOpMode {
         waitForStart();
         initializeOdometry();
 
-        RobotMovement movement = new RobotMovement(frontRightMotor,frontLeftMotor,backRightMotor,backLeftMotor,telemetry,globalPositionUpdate);
+        RobotMovement movement = new RobotMovement(frontRightMotor,frontLeftMotor,backRightMotor,backLeftMotor,globalPositionUpdate,this);
 
 //        BEGIN OP MODE HERE:
 

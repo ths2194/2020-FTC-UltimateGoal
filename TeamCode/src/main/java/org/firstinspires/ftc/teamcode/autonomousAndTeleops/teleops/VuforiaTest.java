@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomousAndTeleops.teleops;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -7,6 +8,7 @@ import org.firstinspires.ftc.teamcode.robot.vision.Vuforia;
 import org.firstinspires.ftc.teamcode.robot.vision.VuforiaFeedback;
 
 @TeleOp(name = "VuforiaTest", group = "TeleOp")
+@Disabled
 // Replace SkeletonOpMode with name of OpMode
 
 

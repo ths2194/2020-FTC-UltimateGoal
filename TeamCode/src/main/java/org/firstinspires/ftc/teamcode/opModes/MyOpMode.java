@@ -30,11 +30,13 @@ public abstract class MyOpMode extends LinearOpMode {
     public Controller controller2;
 
     public File redBlueMultiplierFile = AppUtil.getInstance().getSettingsFile("redBlueMultiplierFile.txt");
-    public int redBlueMultiplier = Integer.parseInt(ReadWriteFile.readFile(redBlueMultiplierFile).trim());
+    public boolean onBlueSide = Boolean.parseBoolean(ReadWriteFile.readFile(redBlueMultiplierFile).trim());
+
+    public File endPosition = AppUtil.getInstance().getSettingsFile("endPosition.txt");
 
     //constants
-    public double shooterPushOffPosition = 0.05;
-    public double shooterPushOnPosition = 0.23;
+    public double shooterPushOffPosition = 0.03;
+    public double shooterPushOnPosition = 0.25;
 
 
     public void initializeWithOdometry () {
@@ -100,16 +102,4 @@ public abstract class MyOpMode extends LinearOpMode {
 //        globalPositionUpdate.reverseNormalEncoder();
 
     }
-
-    public void setMotorPowers(double FLPower, double FRPower, double BLPower, double BRPower, double multiplier) {
-        FLM.setPower(multiplier * FLPower);
-        FRM.setPower(multiplier * FRPower);
-        BLM.setPower(multiplier * BLPower);
-        BRM.setPower(multiplier * BRPower);
-    }
-
-    public void setMotorPowers (double FLPower, double FRPower, double BLPower, double BRPower) {
-        setMotorPowers(FLPower,FRPower,BLPower,BRPower,1);
-    }
-
 }

@@ -7,9 +7,6 @@ import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
 import java.io.File;
 
-/**
- * Created by Sarthak on 6/1/2019.
- */
 public class OdometryGlobalCoordinatePosition implements Runnable{
     //Odometry wheels
     private DcMotor verticalEncoderLeft, verticalEncoderRight, horizontalEncoder;
@@ -108,7 +105,7 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
      */
     public double returnOrientation(){ return (Math.toDegrees(returnOrientationRadians())) % 360; }
 
-    public double returnOrientationRadians(){ return -robotOrientationRadians + Math.PI/2;}
+    public double returnOrientationRadians(){ return (-robotOrientationRadians + Math.PI/2);}
 
 
     /**
@@ -157,7 +154,6 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
         robotGlobalYCoordinatePosition = yPos*COUNTS_PER_INCH;
         robotOrientationRadians = Math.toRadians(-(robotAngle-90));
     }
-
 
     /**
      * Runs the thread

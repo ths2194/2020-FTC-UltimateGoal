@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomousAndTeleops.teleops;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -7,6 +8,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.robot.vision.TensorFlow;
 
 @TeleOp(name = "TensorFlowTest", group = "TeleOp")
+@Disabled
 // Replace SkeletonOpMode with name of OpMode
 
 

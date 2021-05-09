@@ -10,6 +10,7 @@ public class Controller {
     private int left_bumper, right_bumper;
     private int left_triggerCount, right_triggerCount;
     private int right_stick_button, left_stick_button;
+    private int back, start;
 
     public double left_stick_x, right_stick_x, left_stick_y, right_stick_y;
     public double left_trigger, right_trigger;
@@ -33,6 +34,8 @@ public class Controller {
         if (gamepad.right_trigger > 0) { ++right_triggerCount; } else { right_triggerCount = 0; }
         if (gamepad.right_stick_button) { ++right_stick_button; } else { right_stick_button = 0; }
         if (gamepad.left_stick_button) { ++left_stick_button; } else { left_stick_button = 0; }
+        if (gamepad.back) { ++back; } else { back = 0; }
+        if (gamepad.start) { ++start; } else  { start = 0; }
 
         left_stick_x = gamepad.left_stick_x;
         left_stick_y = gamepad.left_stick_y;
@@ -54,6 +57,8 @@ public class Controller {
     public boolean rightBumper() { return 0 < right_bumper; }
     public boolean rightStickButton() { return 0 < right_stick_button; }
     public boolean leftStickButton() { return 0 < left_stick_button; }
+    public boolean back() { return 0 < back; }
+    public boolean start() { return 0  < start; }
 
     public boolean dpadUpOnce() { return 1 == dpad_up; }
     public boolean dpadDownOnce() { return 1 == dpad_down; }
@@ -69,6 +74,8 @@ public class Controller {
     public boolean rightTriggerOnce() { return 1 == right_triggerCount; }
     public boolean rightStickButtonOnce() { return 1 == right_stick_button; }
     public boolean leftStickButtonOnce() { return 1 == left_stick_button; }
+    public boolean backOnce() { return 1 == back; }
+    public boolean startOnce() { return 1 == start; }
 
 
 }

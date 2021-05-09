@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomousAndTeleops.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -14,49 +15,182 @@ import org.firstinspires.ftc.teamcode.robot.vision.TensorFlow;
 
 
 @Autonomous(name = "AutonomousTry1")
+@Disabled
 public class AutonomousTry1 extends MyOpMode {
 
-    @Override
-    public void runOpMode() throws InterruptedException {
-        initializeWithOdometry();
-        intakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        intakeMotor.setTargetPosition(450);
-        intakeMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    boolean onLeft = true;
+    TensorFlow myTensorFlow;
+    RobotMovement movement;
 
-        gripper.setPosition(0); //change to 0
-        TensorFlow myTensorFlow = new TensorFlow(hardwareMap);
-        RobotMovement movement = new RobotMovement(FRM,FLM,BRM,BLM,telemetry,globalPositionUpdate);
-        shooterPush.setPosition(shooterPushOffPosition);
-
-        while (false && !isStopRequested() && !(controller1.leftBumper() && controller1.rightBumper())) {
+    void waitForStartMenu() {
+        int selection = 0;
+        while (!isStopRequested() && !isStarted()) {
             controller1.update();
             if (controller1.dpadLeftOnce() || controller1.dpadRightOnce()) {
-                redBlueMultiplier *= -1;
+                if (selection == 0) onBlueSide = !onBlueSide;
+                if (selection == 1) onLeft = !onLeft;
             }
-            telemetry.addData("Field Side", redBlueMultiplier == 1? "Blue" : "Red");
+            if (controller1.dpadDownOnce()) selection = (selection + 1) % 2;
+            if (controller1.dpadUpOnce()) selection = (selection - 1 + 2) % 2;
+            telemetry.addData("Initialization:","complete");
+            telemetry.addData(selection == 0? "> Field Side" :  "  Field Side", onBlueSide? "Blue" : "Red");
+            telemetry.addData(selection == 1? "> Start Spot" :  "  Start Spot", onLeft? "Left" : "Right");
             telemetry.update();
         }
-        ReadWriteFile.writeFile(redBlueMultiplierFile, String.valueOf(redBlueMultiplier)); //saves current value to file
+        ReadWriteFile.writeFile(redBlueMultiplierFile, String.valueOf(onBlueSide)); //saves current value to file
+    }
 
-        telemetry.addData("Initialization:","complete");
-        telemetry.update();
-
-        waitForStart();
-        globalPositionUpdate.setPosition(-62,48,0);
-
-//        BEGIN OP MODE HERE:
-        movement.runToPositionAndStop(-54,49,-20,0.4,0.4,2,2);
+    int detectRings(){
         double startTimeForDetection = getRuntime();
+
         int numOfRings = myTensorFlow.getNumberOfRings();
 
         while (numOfRings == 0 && getRuntime()-startTimeForDetection < 1.5) {
             numOfRings = myTensorFlow.getNumberOfRings();
         }
+        return numOfRings;
+    }
 
-//        shootPins(movement);
+    @Override
+    public void runOpMode() throws InterruptedException {
+        initializeWithOdometry();
+        intakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        intakeMotor.setTargetPosition(576);
+        intakeMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        movement.pathFindToRestrictedDirectionNoStop(-5,48,-16,0.5,0.4,2,2);
-        movement.runToPositionAndStop(-5,48,-16,0.5,1.7,0.5,0.5);
+        gripper.setPosition(0); //change to 0
+        myTensorFlow = new TensorFlow(hardwareMap);
+        movement = new RobotMovement(FRM,FLM,BRM,BLM,globalPositionUpdate,this);
+        shooterPush.setPosition(shooterPushOffPosition);
+
+        waitForStartMenu();
+
+        int redBlueMultiplier = onBlueSide? 1 : -1;
+
+//        waitForStart();
+//        BEGIN OP MODE HERE:
+        int numOfRings;
+        if (onLeft) {
+            globalPositionUpdate.setPosition(-62,48*redBlueMultiplier,0);
+            movement.runToPositionAndStop(-54,48*redBlueMultiplier+1,-20,0.5,0.5,3,3);
+            numOfRings = detectRings();
+            movement.runToPosition(-4,48*redBlueMultiplier,-14,0.5,0.4,2,2);
+            movement.runToPositionAndStop(-4,48*redBlueMultiplier,-14,0.5,1.7,0.5,0.5);
+
+        }
+        else {
+            globalPositionUpdate.setPosition(-62,24*redBlueMultiplier,0);
+            movement.runToPositionAndStop(-54,24*redBlueMultiplier-1,25,0.5,0.5,3,3);
+            numOfRings = detectRings();
+            movement.runToPosition(-4,24*redBlueMultiplier,7,0.5,0.4,2,2);
+            movement.runToPositionAndStop(-4,24*redBlueMultiplier,7,0.5,1.7,0.5,0.5);
+
+        }
+
+//
+//        movement.runToPosition(-6,48*redBlueMultiplier,0*redBlueMultiplier,0.5,0.4,5,5);
+//
+//        movement.runToPositionAndStop(-2,18*redBlueMultiplier,0*redBlueMultiplier,0.7,1.7,0.25,0.25);
+//
+//
+//        double targetSpeed = 1065;
+//
+//        ((DcMotorEx) upperShooter).setVelocity(targetSpeed);
+//        ((DcMotorEx) lowerShooter).setVelocity(targetSpeed);
+//
+//        sleep(1000);
+//
+//        while ( Math.abs(((DcMotorEx) upperShooter).getVelocity() - targetSpeed) > 10 || Math.abs(((DcMotorEx) lowerShooter).getVelocity() - targetSpeed) > 10) {
+//        }
+//        shooterPush.setPosition(shooterPushOnPosition);
+//        sleep(500);
+//
+//        shooterPush.setPosition(shooterPushOffPosition);
+//
+//        ((DcMotorEx) upperShooter).setVelocity(0);
+//        ((DcMotorEx) lowerShooter).setVelocity(0);
+//
+//        movement.runToPositionAndStop(-2,10*redBlueMultiplier,0*redBlueMultiplier,0.7,1.7,0.25,0.25);
+//
+//        targetSpeed = 1045;
+//
+//        ((DcMotorEx) upperShooter).setVelocity(targetSpeed);
+//        ((DcMotorEx) lowerShooter).setVelocity(targetSpeed);
+//
+//        sleep (500);
+//
+//        while ( Math.abs(((DcMotorEx) upperShooter).getVelocity() - targetSpeed) > 10 || Math.abs(((DcMotorEx) lowerShooter).getVelocity() - targetSpeed) > 10) {
+//        }
+//
+//        shooterPush.setPosition(shooterPushOnPosition);
+//
+//        sleep(500);
+//
+//        ((DcMotorEx) upperShooter).setVelocity(0);
+//        ((DcMotorEx) lowerShooter).setVelocity(0);
+//
+//        sleep(1000);
+//
+//        shooterPush.setPosition(shooterPushOffPosition);
+//
+//        intakeMotor.setPower(0.9);
+//
+//        movement.runToPositionAndStop(-2,4*redBlueMultiplier,0*redBlueMultiplier,0.7,1.7,0.25,0.25);
+//
+//        while (intakeMotor.getCurrentPosition() != intakeMotor.getTargetPosition()){
+//        }
+//
+//        sleep(200);
+//
+//        intakeMotor.setPower(0);
+//
+//        targetSpeed = 1045;
+//
+//        ((DcMotorEx) upperShooter).setVelocity(targetSpeed);
+//        ((DcMotorEx) lowerShooter).setVelocity(targetSpeed);
+//
+//        sleep(1000);
+//
+//        while ( Math.abs(((DcMotorEx) upperShooter).getVelocity() - targetSpeed) > 10 || Math.abs(((DcMotorEx) lowerShooter).getVelocity() - targetSpeed) > 10) {
+//        }
+//        shooterPush.setPosition(shooterPushOnPosition);
+//        sleep(300);
+//        ((DcMotorEx) upperShooter).setVelocity(0);
+//        ((DcMotorEx) lowerShooter).setVelocity(0);
+
+
+
+        if (numOfRings == 0) {
+            movement.runToPositionAndStop(-6, 58*redBlueMultiplier, 0*redBlueMultiplier, 0.7, 0.4, 2, 10);
+        }
+        else if (numOfRings == 4) {
+            movement.runToPositionAndStop(42, 58*redBlueMultiplier, 0*redBlueMultiplier, 0.7, 0.4, 2, 10);
+        }
+        else if (numOfRings == 1){
+            movement.runToPosition(16, 50*redBlueMultiplier, -10*redBlueMultiplier, 0.7, 0.4, 2, 10);
+            movement.runToPositionAndStop(24, 45*redBlueMultiplier, -45*redBlueMultiplier, 0.7, 0.6, 2, 10);
+        }
+        sleep(100);
+        gripper.setPosition(0.7);
+
+        shooterPush.setPosition(shooterPushOffPosition);
+
+        movement.runToPositionAndStop(10, 29*redBlueMultiplier, 0*redBlueMultiplier, 0.7, 0.4, 2, 10);
+
+        ReadWriteFile.writeFile(endPosition, globalPositionUpdate.returnXCoordinate() + " " + globalPositionUpdate.returnYCoordinate() + " " + globalPositionUpdate.returnOrientation());
+
+        while (opModeIsActive()) {
+            //Display Global (x, y, theta) coordinates
+            displayTelemetry(telemetry,globalPositionUpdate,Integer.toString(numOfRings));
+        }
+        //Stop the thread
+        globalPositionUpdate.stop();
+
+    }
+
+    private void shootHighGoal (int redBlueMultiplier) {
+        movement.pathFindToRestrictedDirectionNoStop(-4,48*redBlueMultiplier,-14*redBlueMultiplier,0.5,0.4,2,2);
+        movement.runToPositionAndStop(-4,48*redBlueMultiplier,-14*redBlueMultiplier,0.5,1.7,0.5,0.5);
 
         double targetSpeed = 1095;
 
@@ -68,7 +202,7 @@ public class AutonomousTry1 extends MyOpMode {
         while ( Math.abs(((DcMotorEx) upperShooter).getVelocity() - targetSpeed) > 10 || Math.abs(((DcMotorEx) lowerShooter).getVelocity() - targetSpeed) > 10) {
         }
         shooterPush.setPosition(shooterPushOnPosition);
-        sleep(700);
+        sleep(300);
 
         shooterPush.setPosition(shooterPushOffPosition);
 
@@ -84,7 +218,7 @@ public class AutonomousTry1 extends MyOpMode {
 
         shooterPush.setPosition(shooterPushOnPosition);
 
-        sleep(700);
+        sleep(300);
 
         ((DcMotorEx) upperShooter).setVelocity(0);
         ((DcMotorEx) lowerShooter).setVelocity(0);
@@ -93,7 +227,7 @@ public class AutonomousTry1 extends MyOpMode {
 
         shooterPush.setPosition(shooterPushOffPosition);
 
-        intakeMotor.setPower(0.85);
+        intakeMotor.setPower(0.9);
 
         while (intakeMotor.getCurrentPosition() != intakeMotor.getTargetPosition()){
         }
@@ -112,45 +246,14 @@ public class AutonomousTry1 extends MyOpMode {
         while ( Math.abs(((DcMotorEx) upperShooter).getVelocity() - targetSpeed) > 10 || Math.abs(((DcMotorEx) lowerShooter).getVelocity() - targetSpeed) > 10) {
         }
         shooterPush.setPosition(shooterPushOnPosition);
-        sleep(700);
+        sleep(300);
         ((DcMotorEx) upperShooter).setVelocity(0);
         ((DcMotorEx) lowerShooter).setVelocity(0);
-
-
-
-
-
-
-        if (numOfRings == 0) {
-            movement.runToPositionAndStop(-6, 58, 0, 0.7, 0.4, 2, 10);
-        }
-        else if (numOfRings == 4) {
-            movement.runToPositionAndStop(42, 58, 0, 0.7, 0.4, 2, 10);
-        }
-        else if (numOfRings == 1){
-            movement.runToPosition(16, 50, -10, 0.7, 0.4, 2, 10);
-            movement.runToPositionAndStop(24, 45, -45, 0.7, 0.6, 2, 10);
-        }
-        sleep(100);
-        gripper.setPosition(0.7);
-
-        shooterPush.setPosition(shooterPushOffPosition);
-
-        movement.runToPositionAndStop(10, 33, 0, 0.7, 0.4, 2, 10);
-
-
-        while (opModeIsActive()) {
-            //Display Global (x, y, theta) coordinates
-            displayTelemetry(telemetry,globalPositionUpdate,Integer.toString(numOfRings));
-        }
-        //Stop the thread
-        globalPositionUpdate.stop();
-
     }
 
-    private void shootPins(RobotMovement movement){
-        movement.pathFindToRestrictedDirectionNoStop(-5,44,-37,0.5,0.4,2,2);
-        movement.runToPositionAndStop(-5,44,-38,0.4,1.7,1,0.5);
+    private void shootPins(int redBlueMultiplier){
+        movement.pathFindToRestrictedDirectionNoStop(-5,44*redBlueMultiplier,-37*redBlueMultiplier,0.5,0.4,2,2);
+        movement.runToPositionAndStop(-5,44*redBlueMultiplier,-38*redBlueMultiplier,0.4,1.7,1,0.5);
 
         double targetSpeed = 1135;
 
@@ -172,7 +275,7 @@ public class AutonomousTry1 extends MyOpMode {
 
 //        intakeMotor.setPower(0.7);
 
-        movement.runToPositionAndStop(-5,44,-33,0.4,1.7,1,0.5);
+        movement.runToPositionAndStop(-5,44*redBlueMultiplier,-33*redBlueMultiplier,0.4,1.7,1,0.5);
 
 //        while (intakeMotor.getCurrentPosition() != intakeMotor.getTargetPosition()){
 //        }
@@ -200,7 +303,7 @@ public class AutonomousTry1 extends MyOpMode {
 
         intakeMotor.setPower(0.7);
 
-        movement.runToPositionAndStop(-5,44,-31,0.4,1.7,1,0.5);
+        movement.runToPositionAndStop(-5,44*redBlueMultiplier,-31*redBlueMultiplier,0.4,1.7,1,0.5);
 
         while (intakeMotor.getCurrentPosition() != intakeMotor.getTargetPosition()){
         }
